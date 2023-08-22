@@ -9,6 +9,7 @@ use App\Http\Requests\API\StoreCompanyRequest;
 use App\Http\Requests\API\UpdateCompanyRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class CompanyController extends Controller
@@ -16,9 +17,21 @@ class CompanyController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        //
+        $limit = $request->query('limit', 10);
+        $name = $request->query('name');
+
+        $companies = Company::query()
+            ->whereHas('users', function ($query) {
+                return $query->whereUserId(auth()->id());
+            })
+            ->when($name, function ($query) use ($name) {
+                return $query->where('name', 'like', "%{$name}%");
+            })
+            ->paginate($limit);
+
+        return ResponseFormatter::success($companies, 'Successfully fetched all the companies');
     }
 
     /**
@@ -58,13 +71,16 @@ class CompanyController extends Controller
      */
     public function show(Company $company)
     {
-        //
+        if (!auth()->user()->companies->contains($company)) {
+            return ResponseFormatter::error(['company' => ['You do not own this company']], 'You do not own this company', 403);
+        }
+        return ResponseFormatter::success($company, 'Successfully fetched the company');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateCompanyRequest $request, Company $company)
+    public function update(UpdateCompanyRequest $request, Company $company): JsonResponse
     {
         DB::beginTransaction();
         try {

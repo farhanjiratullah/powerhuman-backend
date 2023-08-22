@@ -82,6 +82,10 @@ class CompanyController extends Controller
      */
     public function update(UpdateCompanyRequest $request, Company $company): JsonResponse
     {
+        if (!auth()->user()->companies->contains($company)) {
+            return ResponseFormatter::error(['company' => ['You do not own this company']], 'You do not own this company', 403);
+        }
+
         DB::beginTransaction();
         try {
             $data = $request->validated();

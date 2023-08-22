@@ -11,7 +11,7 @@ class UpdateCompanyRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return auth()->check();
     }
 
     /**
@@ -22,7 +22,8 @@ class UpdateCompanyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'required|string|max:255',
+            'logo' => 'nullable|image|mimes:png,jpg,jpeg,svg,webp',
         ];
     }
 }

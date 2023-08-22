@@ -31,7 +31,7 @@ class CompanyController extends Controller
             $data = $request->validated();
 
             if ($request->hasFile('logo')) {
-                $logo = $request->file('logo')->store('assets/logo');
+                $logo = $request->file('logo')->store('assets/logos');
                 $data['logo'] = $logo;
             }
 
@@ -66,7 +66,33 @@ class CompanyController extends Controller
      */
     public function update(UpdateCompanyRequest $request, Company $company)
     {
-        //
+        DB::beginTransaction();
+        try {
+            $data = $request->validated();
+
+            if ($request->hasFile('logo')) {
+                $logo = $request->file('logo')->store('assets/logos');
+                $data['logo'] = $logo;
+
+                Storage::delete($company->logo);
+            } else {
+                $data['logo'] = $company->logo;
+            }
+
+            $company->update($data);
+
+            DB::commit();
+
+            return ResponseFormatter::success($company, 'Successfully updated the company');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            if (isset($logo)) {
+                Storage::delete($logo);
+            }
+
+            return ResponseFormatter::error(['errors' => [$e->getMessage()]], $e->getMessage(), 500);
+        }
     }
 
     /**

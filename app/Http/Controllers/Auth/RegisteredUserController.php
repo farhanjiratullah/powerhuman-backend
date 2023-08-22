@@ -40,7 +40,14 @@ class RegisteredUserController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return ResponseFormatter::error($validator->errors(), 'Request errors', 422);
+            return response()->json([
+                'meta' => [
+                    'code' => 422,
+                    'status' => 'error',
+                    'message' => 'Request errors',
+                ],
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         $validated = $validator->validated();

@@ -1,17 +1,22 @@
 <?php
 
-namespace App\Http\Requests\API;
+namespace App\Http\Requests\API\Team;
 
+use App\Helpers\ResponseFormatter;
+use App\Models\Company;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\JsonResponse;
 
-class UpdateCompanyRequest extends FormRequest
+class StoreTeamRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return auth()->check();
+        $company = Company::find($this->company_id);
+
+        return auth()->check() && auth()->user()->companies->contains($company);
     }
 
     /**
@@ -22,8 +27,9 @@ class UpdateCompanyRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'company_id' => 'required|integer|exists:companies,id',
             'name' => 'required|string|max:255',
-            'logo' => 'nullable|image|mimes:png,jpg,jpeg,svg,webp',
+            'icon' => 'nullable|image|mimes:png,jpg,jpeg,svg,webp'
         ];
     }
 }

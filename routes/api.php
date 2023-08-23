@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\CompanyController;
+use App\Http\Controllers\API\TeamController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,7 +19,10 @@ use Illuminate\Support\Facades\Route;
 require __DIR__ . '/auth.php';
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('companies/all', [CompanyController::class, 'all'])->name('companies.all');
+    Route::apiResource('companies', CompanyController::class)->except('destroy');
+
     Route::apiResources([
-        'companies' => CompanyController::class
+        'teams' => TeamController::class
     ]);
 });

@@ -5,8 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
-use App\Http\Requests\API\StoreCompanyRequest;
-use App\Http\Requests\API\UpdateCompanyRequest;
+use App\Http\Requests\API\Company\StoreCompanyRequest;
+use App\Http\Requests\API\Company\UpdateCompanyRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -69,7 +69,7 @@ class CompanyController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Company $company)
+    public function show(Company $company): JsonResponse
     {
         if (!auth()->user()->companies->contains($company)) {
             return ResponseFormatter::error(['company' => ['You do not own this company']], 'You do not own this company', 403);
@@ -121,5 +121,16 @@ class CompanyController extends Controller
     public function destroy(Company $company)
     {
         //
+    }
+
+    public function all(Request $request): JsonResponse
+    {
+        $companies = Company::query()
+            ->whereHas('users', function ($query) {
+                return $query->whereUserId(auth()->id());
+            })
+            ->get();
+
+        return ResponseFormatter::success($companies, 'Successfully fetched all the companies');
     }
 }

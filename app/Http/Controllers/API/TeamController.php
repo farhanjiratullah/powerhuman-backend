@@ -23,6 +23,7 @@ class TeamController extends Controller
         $name = $request->query('name');
 
         $teams = Team::query()
+            ->withCount('employees')
             ->whereHas('company', function ($query) {
                 return $query->whereHas('users', function ($query) {
                     return $query->whereUserId(auth()->id());

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Team;
 use App\Http\Requests\API\Team\StoreTeamRequest;
 use App\Http\Requests\API\Team\UpdateTeamRequest;
+use App\Models\Company;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -129,5 +130,28 @@ class TeamController extends Controller
         $team->delete();
 
         return ResponseFormatter::success(message: 'Successfully deleted the team', code: 204);
+    }
+
+    public function all(Request $request): JsonResponse
+    {
+        $teams = Team::query()
+            ->whereHas('company.users', function ($query) {
+                return $query->whereUserId(auth()->id());
+            })
+            ->get();
+
+        return ResponseFormatter::success($teams, 'Successfully fetched all the teams');
+    }
+
+    public function getAllTeamsBasedOnCompanyId(Request $request, Company $company): JsonResponse
+    {
+        if (!auth()->user()->companies->contains($company->id)) {
+            return ResponseFormatter::error(['team' => ['You do not own this team']], 'You do not own this team', 403);
+        }
+
+        $teams = Team::withCount('employees')->whereCompanyId($company->id)
+            ->get();
+
+        return ResponseFormatter::success($teams, 'Successfully fetched all the teams');
     }
 }

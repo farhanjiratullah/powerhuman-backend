@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Http\Requests\API\Role\StoreRoleRequest;
 use App\Http\Requests\API\Role\UpdateRoleRequest;
+use App\Models\Company;
 use App\Models\Responsibility;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -152,5 +153,28 @@ class RoleController extends Controller
         $role->delete();
 
         return ResponseFormatter::success(message: 'Successfully deleted the role', code: 204);
+    }
+
+    public function all(Request $request): JsonResponse
+    {
+        $roles = Role::query()
+            ->whereHas('company.users', function ($query) {
+                return $query->whereUserId(auth()->id());
+            })
+            ->get();
+
+        return ResponseFormatter::success($roles, 'Successfully fetched all the roles');
+    }
+
+    public function getAllRolesBasedOnCompanyId(Request $request, Company $company): JsonResponse
+    {
+        if (!auth()->user()->companies->contains($company->id)) {
+            return ResponseFormatter::error(['role' => ['You do not own this role']], 'You do not own this role', 403);
+        }
+
+        $roles = Role::with('responsibilities')->whereCompanyId($company->id)
+            ->get();
+
+        return ResponseFormatter::success($roles, 'Successfully fetched all the roles');
     }
 }

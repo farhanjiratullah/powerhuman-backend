@@ -1,9 +1,12 @@
 <?php
 
+use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\API\CompanyController;
 use App\Http\Controllers\API\EmployeeController;
 use App\Http\Controllers\API\RoleController;
 use App\Http\Controllers\API\TeamController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,7 +21,20 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-require __DIR__ . '/auth.php';
+// Route::middleware('guest')->group(function () {
+//     Route::post('register', [RegisteredUserController::class, 'store']);
+
+//     Route::post('login', [AuthenticatedSessionController::class, 'store']);
+// });
+
+// Route::middleware('auth:sanctum')->group(function () {
+//     Route::get('/user', function (Request $request) {
+//         return ResponseFormatter::success($request->user(), 'Successfully fetched logged in user');
+//     });
+
+//     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
+//         ->name('logout');
+// });
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('companies/all', [CompanyController::class, 'all'])->name('companies.all');
@@ -36,3 +52,5 @@ Route::middleware('auth:sanctum')->group(function () {
         'employees' => EmployeeController::class
     ]);
 });
+
+require __DIR__ . '/auth.php';

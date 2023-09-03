@@ -30,14 +30,7 @@ class StoreTeamRequest extends FormRequest
             'company_id' => 'required|integer|exists:companies,id',
             'name' => 'required|string|max:255',
             'icon' => 'nullable|image|mimes:png,jpg,jpeg,svg,webp',
-            'activated_at' => 'required|boolean',
+            'activated_at' => 'boolean',
         ];
-    }
-
-    protected function prepareForValidation()
-    {
-        $this->merge([
-            'activated_at' => $this->activated_at ? now() : null
-        ]);
     }
 }

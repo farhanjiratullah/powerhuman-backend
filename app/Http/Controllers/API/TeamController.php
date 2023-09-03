@@ -46,6 +46,7 @@ class TeamController extends Controller
         DB::beginTransaction();
         try {
             $data = $request->validated();
+            $data['activated_at'] = $data['activated_at'] === "1" ? now() : null;
 
             if ($request->hasFile('icon')) {
                 $icon = $request->file('icon')->store('assets/icons');
@@ -92,6 +93,7 @@ class TeamController extends Controller
         DB::beginTransaction();
         try {
             $data = $request->validated();
+            $data['activated_at'] = $data['activated_at'] === "1" ? now() : null;
 
             if ($request->hasFile('icon')) {
                 $icon = $request->file('icon')->store('assets/icons');

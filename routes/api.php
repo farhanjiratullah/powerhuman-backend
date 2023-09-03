@@ -37,14 +37,16 @@ use Illuminate\Support\Facades\Route;
 // });
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('company/{company}/teams', [TeamController::class, 'getAllTeamsBasedOnCompanyId'])->name('teams.company.show');
+    Route::get('company/{company}/roles', [RoleController::class, 'getAllRolesBasedOnCompanyId'])->name('roles.company.show');
+
     Route::get('companies/all', [CompanyController::class, 'all'])->name('companies.all');
     Route::apiResource('companies', CompanyController::class)->except('destroy');
 
     Route::get('teams/all', [TeamController::class, 'all'])->name('teams.all');
-    Route::get('teams/company/{company}', [TeamController::class, 'getAllTeamsBasedOnCompanyId'])->name('teams.company.show');
 
     Route::get('roles/all', [RoleController::class, 'all'])->name('roles.all');
-    Route::get('roles/company/{company}', [RoleController::class, 'getAllRolesBasedOnCompanyId'])->name('roles.company.show');
+
 
     Route::apiResources([
         'teams' => TeamController::class,

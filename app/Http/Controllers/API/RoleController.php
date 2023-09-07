@@ -22,7 +22,7 @@ class RoleController extends Controller
     public function index(Request $request): JsonResponse
     {
         $limit = $request->query('limit', 10);
-        $name = $request->query('name');
+        $search = $request->query('search');
 
         $roles = Role::query()
             ->withCount('employees')
@@ -31,8 +31,8 @@ class RoleController extends Controller
                     return $query->whereUserId(auth()->id());
                 });
             })
-            ->when($name, function ($query) use ($name) {
-                return $query->where('name', 'like', "%{$name}%");
+            ->when($search, function ($query) use ($search) {
+                return $query->where('name', 'like', "%{$search}%");
             })
             ->paginate($limit);
 

@@ -20,8 +20,7 @@ class EmployeeController extends Controller
     public function index(Request $request): JsonResponse
     {
         $limit = $request->query('limit', 10);
-        $name = $request->query('name');
-        $role = $request->query('role');
+        $search = $request->query('search');
 
         $totalEmployees = Employee::query()
             ->whereHas('team.company.users', function ($query) {
@@ -36,15 +35,28 @@ class EmployeeController extends Controller
         $isInactiveEmployees = $totalEmployees - $isActiveEmployees;
 
         $employees = Employee::query()
-            ->whereHas('team.company.users', function ($query) {
-                return $query->whereUserId(auth()->id());
+            ->with('role')
+            ->whereHas('team', function ($query) {
+                return $query->whereHas('company', function ($query) {
+                    return $query->whereHas('users', function ($query) {
+                        return $query->whereId(auth()->id());
+                    });
+                });
             })
-            ->when($name, function ($query) use ($name) {
-                return $query->where('name', 'like', "%{$name}%");
+            ->whereHas('role', function ($query) {
+                return $query->whereHas('company', function ($query) {
+                    return $query->whereHas('users', function ($query) {
+                        return $query->whereId(auth()->id());
+                    });
+                });
             })
-            ->when($role, function ($query) use ($role) {
-                return $query->whereHas('role', function ($query) use ($role) {
-                    return $query->where('name', 'like', "%{$role}%");
+
+            ->when($search, function ($query) use ($search) {
+                return $query->where(function ($query) use ($search) {
+                    return $query->where('name', 'like', "%{$search}%")
+                        ->orWhereHas('role', function ($query) use ($search) {
+                            return $query->where('name', 'like', "%{$search}%");
+                        });
                 });
             })
             ->paginate($limit);

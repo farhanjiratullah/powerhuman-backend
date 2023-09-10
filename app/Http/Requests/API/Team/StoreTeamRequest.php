@@ -29,7 +29,8 @@ class StoreTeamRequest extends FormRequest
         return [
             'company_id' => 'required|integer|exists:companies,id',
             'name' => 'required|string|max:255',
-            'icon' => 'nullable|image|mimes:png,jpg,jpeg,svg,webp'
+            'icon' => 'nullable|image|mimes:png,jpg,jpeg,svg,webp',
+            'activated_at' => 'boolean',
         ];
     }
 }

@@ -16,6 +16,11 @@ class Team extends Model
         'company_id',
         'name',
         'icon',
+        'activated_at',
+    ];
+
+    protected $casts = [
+        'activated_at' => 'datetime',
     ];
 
     public function company(): BelongsTo

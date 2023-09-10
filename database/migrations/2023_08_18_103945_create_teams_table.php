@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('company_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('name');
             $table->string('icon');
+            $table->timestamp('activated_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

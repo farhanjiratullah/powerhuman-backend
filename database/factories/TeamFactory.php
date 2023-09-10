@@ -16,9 +16,12 @@ class TeamFactory extends Factory
      */
     public function definition(): array
     {
+        $activatedAt = [null, fake()->dateTimeBetween('-1 month', 'now')];
+
         return [
             'name' => fake()->catchPhrase(),
-            'icon' => fake()->imageUrl(70, 70)
+            'icon' => fake()->imageUrl(70, 70),
+            'activated_at' => fake()->randomElement($activatedAt),
         ];
     }
 }

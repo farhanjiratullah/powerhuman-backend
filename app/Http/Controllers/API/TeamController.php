@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Team;
 use App\Http\Requests\API\Team\StoreTeamRequest;
 use App\Http\Requests\API\Team\UpdateTeamRequest;
+use App\Models\Company;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +21,7 @@ class TeamController extends Controller
     public function index(Request $request): JsonResponse
     {
         $limit = $request->query('limit', 10);
-        $name = $request->query('name');
+        $search = $request->query('search');
 
         $teams = Team::query()
             ->withCount('employees')
@@ -29,8 +30,8 @@ class TeamController extends Controller
                     return $query->whereUserId(auth()->id());
                 });
             })
-            ->when($name, function ($query) use ($name) {
-                return $query->where('name', 'like', "%{$name}%");
+            ->when($search, function ($query) use ($search) {
+                return $query->where('name', 'like', "%{$search}%");
             })
             ->paginate($limit);
 
@@ -45,6 +46,7 @@ class TeamController extends Controller
         DB::beginTransaction();
         try {
             $data = $request->validated();
+            $data['activated_at'] = $data['activated_at'] === "1" ? now() : null;
 
             if ($request->hasFile('icon')) {
                 $icon = $request->file('icon')->store('assets/icons');
@@ -91,6 +93,7 @@ class TeamController extends Controller
         DB::beginTransaction();
         try {
             $data = $request->validated();
+            $data['activated_at'] = $data['activated_at'] === "1" ? now() : null;
 
             if ($request->hasFile('icon')) {
                 $icon = $request->file('icon')->store('assets/icons');
@@ -129,5 +132,28 @@ class TeamController extends Controller
         $team->delete();
 
         return ResponseFormatter::success(message: 'Successfully deleted the team', code: 204);
+    }
+
+    public function all(Request $request): JsonResponse
+    {
+        $teams = Team::query()
+            ->whereHas('company.users', function ($query) {
+                return $query->whereUserId(auth()->id());
+            })
+            ->get();
+
+        return ResponseFormatter::success($teams, 'Successfully fetched all the teams');
+    }
+
+    public function getAllTeamsBasedOnCompanyId(Request $request, Company $company): JsonResponse
+    {
+        if (!auth()->user()->companies->contains($company->id)) {
+            return ResponseFormatter::error(['team' => ['You do not own this team']], 'You do not own this team', 403);
+        }
+
+        $teams = Team::withCount('employees')->whereCompanyId($company->id)
+            ->get();
+
+        return ResponseFormatter::success($teams, 'Successfully fetched all the teams');
     }
 }

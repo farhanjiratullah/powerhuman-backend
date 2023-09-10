@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\API\Team;
 
+use App\Models\Company;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateTeamRequest extends FormRequest
@@ -11,7 +12,9 @@ class UpdateTeamRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return auth()->check();
+        $company = Company::find($this->company_id);
+
+        return auth()->check() && auth()->user()->companies->contains($company);
     }
 
     /**
@@ -24,7 +27,9 @@ class UpdateTeamRequest extends FormRequest
         return [
             'company_id' => 'required|integer|exists:companies,id',
             'name' => 'required|string|max:255',
-            'icon' => 'nullable|image|mimes:png,jpg,jpeg,svg,webp'
+            'icon' =>
+            'nullable|image|mimes:png,jpg,jpeg,svg,webp',
+            'activated_at' => 'boolean',
         ];
     }
 }

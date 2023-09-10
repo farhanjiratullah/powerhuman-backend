@@ -172,7 +172,7 @@ class RoleController extends Controller
             return ResponseFormatter::error(['role' => ['You do not own this role']], 'You do not own this role', 403);
         }
 
-        $roles = Role::with('responsibilities')->whereCompanyId($company->id)
+        $roles = Role::whereCompanyId($company->id)
             ->get();
 
         return ResponseFormatter::success($roles, 'Successfully fetched all the roles');
